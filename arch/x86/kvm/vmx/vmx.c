@@ -6280,13 +6280,20 @@ void dump_vmcs(struct kvm_vcpu *vcpu)
  * The guest has exited.  See if we can fix it or if we need userspace
  * assistance.
  */
+
+/* total exits and total time spent */
+extern u32 total_exits;
+extern u64 total_time_spent;
+
 static int __vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 {
+	/* start time */
+	u64 start_time = rdtsc();
+
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 	union vmx_exit_reason exit_reason = vmx->exit_reason;
 	u32 vectoring_info = vmx->idt_vectoring_info;
 	u16 exit_handler_index;
-
 	/*
 	 * Flush logged GPAs PML buffer, this will make dirty_bitmap more
 	 * updated. Another good is, in kvm_vm_ioctl_get_dirty_log, before
@@ -6295,6 +6302,14 @@ static int __vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	 * flushed already.  Note, PML is never enabled in hardware while
 	 * running L2.
 	 */
+
+	/* total exits increased*/
+	total_exits++;
+	/* end time */
+        u64 end_time = rdtsc();
+	/* time calculate */
+	total_time_spent = total_time_spent + (end_time - start_time);
+
 	if (enable_pml && !is_guest_mode(vcpu))
 		vmx_flush_pml_buffer(vcpu);
 
@@ -6459,8 +6474,10 @@ unexpected_vmexit:
 	return 0;
 }
 
+
 static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
-{
+{	
+	
 	int ret = __vmx_handle_exit(vcpu, exit_fastpath);
 
 	/*

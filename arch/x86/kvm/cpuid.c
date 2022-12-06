@@ -1493,16 +1493,36 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 }
 EXPORT_SYMBOL_GPL(kvm_cpuid);
 
+/* total_exits */
+u32 total_exits = 0;
+/* export symbol to the global environment */
+EXPORT_SYMBOL(total_exits);
+/* total_time_spent */
+u64 total_time_spent = 0;
+EXPORT_SYMBOL(total_time_spent);
+
 int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 {
 	u32 eax, ebx, ecx, edx;
-
 	if (cpuid_fault_enabled(vcpu) && !kvm_require_cpl(vcpu, 0))
 		return 1;
 
 	eax = kvm_rax_read(vcpu);
 	ecx = kvm_rcx_read(vcpu);
+
+    	if(eax == 0x4ffffffc){
+		eax= total_exits;
+		printk(KERN_INFO"### Total Exits in EAX = %u", eax);
+	} else if (eax == 0x4ffffffd) {
+		printk(KERN_INFO "### Total time in hypervisor = %llu", total_time_spent);
+		/* lowerbit in ecx */
+		ecx = (u32) (total_time_spent  >> 32);
+		/* higherbit in ebx */
+		ebx = (u32) (total_time_spent & 0xffffffff);
+	} else {	
 	kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
+	}
+
 	kvm_rax_write(vcpu, eax);
 	kvm_rbx_write(vcpu, ebx);
 	kvm_rcx_write(vcpu, ecx);
