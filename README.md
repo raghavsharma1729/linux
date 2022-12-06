@@ -1,8 +1,8 @@
 # CMPE_283 Assignment2
 
 ## Contributors
-Raghav Sharma
-Sakshi Kekre
+Raghav Sharma (raghav.sharma01@sjsu.edu)</br>
+Sakshi Kekre (sakshisanjay.kekre@sjsu.edu)
 
 ## Work Distribution
 
