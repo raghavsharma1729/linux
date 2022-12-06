@@ -71,57 +71,63 @@ if facing error The authenticity of host 'github.com (140.82.113.4)' can't be es
 ```sudo apt-get install gcc make build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache bison flex libelf-dev```
 
 16. Find the configuration of current OS and use that to build linux kernel
- ```cd linux```
- ```uname -r```
- ```cp /boot/config-5.4.0-1096-gcp  .config```
- ```make oldconfig```
+ ``` cd linux ```
+ ``` uname -r ```
+ ``` cp /boot/config-5.4.0-1096-gcp  .config ```
+ ``` make oldconfig ```
  just keep enter pressed for newer configuration asked in above command
  
  17. Prepare the linux
- ```make prepare```
+ ``` make prepare ```
  
- 18.  Build all the modules
-```  make -j 8 modules```
+18.  Build all the modules
+ ```  make -j 8 modules ```
 run it a couple of times if stops and if issue regarding some certificiation then run following and run again
- ```scripts/config --disable SYSTEM_TRUSTED_KEYS
-  scripts/config --disable SYSTEM_REVOCATION_KEYS```
+ ``` 
+  scripts/config --disable SYSTEM_TRUSTED_KEYS 
+  scripts/config --disable SYSTEM_REVOCATION_KEYS 
+  ```
   
  19. Build kernel:
-```make -j 8``` 
+``` make -j 8 ``` 
 
 20. Package the build
-```sudo make INSTALL_MOD_STRIP=1 modules_install ```
+``` sudo make INSTALL_MOD_STRIP=1 modules_install ```
 
 21. Install built linux kernel 
-```sudo make install```
+``` sudo make install ```
 
 22. Reboot the kernel
-```sudo reboot```
+``` sudo reboot ```
 
 23. Connect back to VM and check the version it should be updated
 
 24. Now do the required changes in the code for adding a new leafnode for CPUID 
 
 25. Rebuild and install the modules:
- ```make -j 8 modules
+ ``` 
+    make -j 8 modules
     sudo lsmod | grep kvm
     sudo rmmod kvm_intel
     sudo rmmod kvm
     sudo modprobe kvm
     sudo modprobe kvm_intel
-    sudo lsmod | grep kvm ```
+    sudo lsmod | grep kvm
+   ```
     
 26. Install tools for KVM,check kvm-ok, and reboot:
 
- ```sudo apt-get install cpu-checker    
+ ``` 
+    sudo apt-get install cpu-checker    
     sudo apt-get install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
     sudo kvm-ok
-    sudo reboot```
+    sudo reboot 
+   ```
     
  27.  Steps to Do for seting up inner VM
  
  ```
- sudo adduser 'spartan' libvirt
+  sudo adduser 'spartan' libvirt
   sudo adduser 'spartan' kvm
   sudo systemctl status libvirtd (this should show status running)
  ```
@@ -133,8 +139,10 @@ run it a couple of times if stops and if issue regarding some certificiation the
 30. Create our inner VM using virt-manager: https://www.tecmint.com/create-virtual-machines-in-kvm-using-virt-manager/
 
 31. On the inner-VM install dependency
-``` sudo apt-get update
+``` 
+    sudo apt-get update
     sudo apt-get install build-essential
-    sudo apt-get install cpuid```
+    sudo apt-get install cpuid
+ ```
     
 32. Test your Kernel functionality with your written tests
