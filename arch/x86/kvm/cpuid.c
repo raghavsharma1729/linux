@@ -1501,16 +1501,42 @@ EXPORT_SYMBOL(total_exits);
 u64 total_time_spent = 0;
 EXPORT_SYMBOL(total_time_spent);
 
+/* each type exit counts */
+u64 each_exit_reason_count[70];
+EXPORT_SYMBOL(each_exit_reason_count);
+
+/* time spent in each exit*/
+u64 time_spent_in_each_exit[70];
+EXPORT_SYMBOL(time_spent_in_each_exit);
+
+/* exit not handled in KVM */
+u32 exit_not_handled_in_kvm[] = {3,4,5,6,11,16,17,33,34,51,63,64,66,67,68,69};
+
+/* check if not handled by KVM */
+bool is_not_handled_by_kvm(u32 ecx)
+{
+	int i;
+	bool is_not_handled = false;
+	for (i = 0; i < 17; i++) {
+        if (not_handled_in_kvm[i] == ecx) {
+            is_not_handled = true;
+            break;
+        }
+    }
+	return is_not_handled;
+}
+
 int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 {
 	u32 eax, ebx, ecx, edx;
+    u64 time_spent_in_exit;
 	if (cpuid_fault_enabled(vcpu) && !kvm_require_cpl(vcpu, 0))
 		return 1;
 
 	eax = kvm_rax_read(vcpu);
 	ecx = kvm_rcx_read(vcpu);
 
-    	if(eax == 0x4ffffffc){
+    if(eax == 0x4ffffffc){
 		eax= total_exits;
 		printk(KERN_INFO"### Total Exits in EAX = %u", eax);
 	} else if (eax == 0x4ffffffd) {
@@ -1519,7 +1545,39 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		ecx = (u32) (total_time_spent  >> 32);
 		/* higherbit in ebx */
 		ebx = (u32) (total_time_spent & 0xffffffff);
-	} else {	
+	} else if ( (eax == 0x4ffffffe) || (eax == 0x4fffffff) ) {		
+		/* Not defined by the SDM */
+		if (ecx < 0 || ecx > 69 || ecx == 35 || ecx == 38 || ecx == 65 || ecx == 42 ) {			
+			printk(KERN_INFO "0x%x: exit(%u) not defined in SDM\n", eax, ecx);
+			eax = 0;
+			ebx = 0;
+			ecx = 0;
+			edx = 0xffffffff;
+		}
+		/* Not enabled in KVM */
+		else if (is_not_handled_by_kvm(ecx) ) {			
+			printk(KERN_INFO "0x%x: exit(%u) not enabled by KVM\n", eax, ecx);
+			eax = 0;
+			ebx = 0;
+			ecx = 0;
+			edx = 0;
+		}
+        else if (eax == 0x4ffffffe){
+            printk(KERN_INFO "0x4ffffffe, Exit : %u. Total exits=%lld\n", ecx, each_exit_reason_count[ecx]);
+                    eax = each_exit_reason_count[ecx];
+                    ebx = 0;
+                    ecx = 0;
+                    edx = 0;
+        }
+        else if (eax == 0x4fffffff){
+            time_spent_in_exit = time_spent_in_each_exit[ecx];
+            printk(KERN_INFO "0x4fffffff, Exit :  %u. Total time spent=%llu\n", ecx, time_spent_in_exit);       					
+            eax = 0;
+            ebx = (u32)(time_spent_in_exit >> 32);
+            ecx = (u32)(time_spent_in_exit & 0xffffffff);
+            edx = 0;
+        }
+	}   else {	
 	kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
 	}
 

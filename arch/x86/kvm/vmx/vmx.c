@@ -6284,12 +6284,16 @@ void dump_vmcs(struct kvm_vcpu *vcpu)
 /* total exits and total time spent */
 extern u32 total_exits;
 extern u64 total_time_spent;
+/* Each exit count and time spent in each exit */
+extern u64 each_exit_reason_count[70];
+extern u64 time_spent_in_each_exit[70];
 
 static int __vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 {
 	/* start time */
 	u64 start_time = rdtsc();
 	u64 end_time=0;
+    u16 exit_reason_basic;
 
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 	union vmx_exit_reason exit_reason = vmx->exit_reason;
@@ -6306,10 +6310,19 @@ static int __vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 
 	/* total exits increased*/
 	total_exits++;
+    /* exit type count increment */
+    if (exit_reason.basic >= 0 && exit_reason.basic < 70 ))
+	each_exit_reason_count[exit_reason.basic]++;
 	/* end time */
-        end_time = rdtsc();
-	/* time calculate */
+    end_time = rdtsc();
+	/* total time calculate for exit */
 	total_time_spent = total_time_spent + (end_time - start_time);
+
+    /* totla time spent for each exit */
+     exit_reason_basic = (u16)to_vmx(vcpu)->exit_reason.basic;
+    if(exit_reason_basic >=0 && exit_reason_basic < 70) {
+	time_spent_in_each_exit[exit_reason_basic] = time_spent_in_each_exit[exit_reason_basic] + (end_time - start_time);			
+	}
 
 	if (enable_pml && !is_guest_mode(vcpu))
 		vmx_flush_pml_buffer(vcpu);
