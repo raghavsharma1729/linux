@@ -10,10 +10,14 @@ Raghav:
 1. Setup GCP VM and build and install kernel, compilation of code, seting up github
 2. Modified the code in the cpuid.c and vmx.c file to implement the functionality for returning the total number of all exit types in %eax when the register value for %eax is 0x4FFFFFFC for the CPUID instruction call
 3. Setup the inner-VM inside a GCP Ubuntu instance.
+4. Modified the code in the cpuid.c and vmx.c file to implement the functionality for returning the total time spent for each exit by returning the high 32 bits in %ebx and the low 32 bits in %ecx when the register value for %eax is 0x4FFFFFFF for the CPUID instruction call
+5. Written the code for testing and tested the functionality for time spent in each exit
 
 Sakshi:
 1. Modified the code in the cpuid.c and vmx.c file to implement the functionality for returning the high 32 bits in %ebx and the low 32 bits in %ecx of the total time spent in processing all exits, when the register value for %eax is 0x4FFFFFFD for the CPUID instruction call
 2. Research about how to test the changes on the Inner-VM and figured out the dependencie. Wrote the tests.
+3. Modified the code in the cpuid.c and vmx.c file to implement the functionality for returning the total number of each exit types in %eax when the register value for %eax is 0x4FFFFFFE for the CPUID instruction call
+4. Written the code for testing and tested the functionality for each exit count
 
 Common
 Pairing in debugging and running code
@@ -146,3 +150,15 @@ run it a couple of times if stops and if issue regarding some certificiation the
  ```
     
 32. Test your Kernel functionality with your written tests
+
+### Assignment 3
+
+33. Edit the required code for the new  functionality and build the kernel and test the functionality in InnerVM.
+
+34. 
+Comment on the frequency of exits – does the number of exits increase at a stable rate? Or are there more exits performed during certain VM operations? Approximately how many exits does a full VM boot entail? 
+Some of the exits have increased, some have remained the same. The amount of the increase varies depending on the type of exit. The number of exits increase during VM boot procedure. The full VM boot have 8127983 total exits.
+
+Of the exit types defined in the SDM, which are the most frequent? Least?  
+The most frequent exit reason is EXIT_REASON_EPT_VIOLATION(48), while EXIT_REASON_DR_ACCESS(29) is the least frequent. There are some more basic exits whose total exits are 0.
+
