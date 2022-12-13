@@ -6311,7 +6311,7 @@ static int __vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	/* total exits increased*/
 	total_exits++;
     /* exit type count increment */
-    if (exit_reason.basic >= 0 && exit_reason.basic < 70 ))
+    if (exit_reason.basic >= 0 && exit_reason.basic < 70 )
 	each_exit_reason_count[exit_reason.basic]++;
 	/* end time */
     end_time = rdtsc();

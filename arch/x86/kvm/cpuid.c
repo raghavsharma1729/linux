@@ -1518,7 +1518,7 @@ bool is_not_handled_by_kvm(u32 ecx)
 	int i;
 	bool is_not_handled = false;
 	for (i = 0; i < 17; i++) {
-        if (not_handled_in_kvm[i] == ecx) {
+        if (exit_not_handled_in_kvm[i] == ecx) {
             is_not_handled = true;
             break;
         }
